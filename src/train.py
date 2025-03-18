@@ -3,7 +3,7 @@ import tensorflow as tf
 import numpy as np
 from matplotlib import pyplot as plt
 from sklearn.metrics import f1_score, precision_score, recall_score, confusion_matrix
-from model import build_resnet
+from model import build_resnet, build_resnet50
 from dataloader import get_training_dataset, get_validation_dataset, count_data_items
 import config
 
@@ -36,14 +36,20 @@ NUM_TRAINING_IMAGES = count_data_items(config.TRAINING_FILENAMES)
 NUM_VALIDATION_IMAGES = count_data_items(config.VALIDATION_FILENAMES)
 STEPS_PER_EPOCH = NUM_TRAINING_IMAGES // config.BATCH_SIZE
 VALIDATION_STEPS = -(-NUM_VALIDATION_IMAGES // config.BATCH_SIZE)
+
+NUM_VAL_IMAGES = count_data_items(config.VALIDATION_FILENAMES)
+
+
 # Create the model
 model = build_resnet()
+# model = build_resnet50()
+
+# tensorboard --logdir=
 tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=config.LOG_DIR, histogram_freq=1)
 
 history = model.fit(get_training_dataset(), steps_per_epoch=STEPS_PER_EPOCH, epochs=config.EPOCHS,
                     validation_data=get_validation_dataset(), validation_steps=VALIDATION_STEPS,
                     callbacks=[lr_callback, tensorboard_callback])
-
 
 
 val = get_validation_dataset(ordered=True) 
@@ -55,12 +61,12 @@ preds = np.argmax(prob, axis=-1)
 
 print('Generating submission.csv file...')
 val_data = val.map(lambda image, idnum: idnum).unbatch()
-val_id = next(iter(val_data.batch(config.NUM_TEST_IMAGES))).numpy().astype('U')
+val_id = next(iter(val_data.batch(NUM_VAL_IMAGES))).numpy().astype('U')
 
 # Write the submission file
 np.savetxt(
     'submission.csv',
-    np.rec.fromarrays([val_id, predictions]),
+    np.rec.fromarrays([val_id, preds]),
     fmt=['%s', '%d'],
     delimiter=',',
     header='id,label',
