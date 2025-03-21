@@ -72,3 +72,45 @@ np.savetxt(
     header='id,label',
     comments='',
 )
+
+# main.py wrap up
+
+def main():
+    print("Num GPUs Available: ", len(tf.config.list_physical_devices('GPU')))
+    print("Tensorflow version " + tf.__version__)
+
+    model = build_resnet()
+
+    tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=config.LOG_DIR, histogram_freq=1)
+    lr_callback = tf.keras.callbacks.LearningRateScheduler(lrfn, verbose=True)
+
+    history = model.fit(
+        get_training_dataset(), 
+        steps_per_epoch=STEPS_PER_EPOCH, 
+        epochs=config.EPOCHS,
+        validation_data=get_validation_dataset(), 
+        validation_steps=VALIDATION_STEPS,
+        callbacks=[lr_callback, tensorboard_callback]
+    )
+
+    val = get_validation_dataset(ordered=True) 
+    print('Computing predictions...')
+    val_data = val.map(lambda image, idnum: image)
+    prob = model.predict(val_data)
+    preds = np.argmax(prob, axis=-1)
+
+    print('Generating submission.csv file...')
+    val_data = val.map(lambda image, idnum: idnum).unbatch()
+    val_id = next(iter(val_data.batch(NUM_VAL_IMAGES))).numpy().astype('U')
+
+    np.savetxt(
+        config.SUBMISSION_FILE,
+        np.rec.fromarrays([val_id, preds]),
+        fmt=['%s', '%d'],
+        delimiter=',',
+        header='id,label',
+        comments='',
+    )
+
+if __name__ == "__main__":
+    main()
