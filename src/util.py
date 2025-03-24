@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import math
 from sklearn.metrics import f1_score, precision_score, recall_score, confusion_matrix
+from config import CLASSES
 
 
 def batch_to_numpy_images_and_labels(data):
