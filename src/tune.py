@@ -24,9 +24,9 @@ def tune_model():
     early_stopping = EarlyStopping(monitor='val_loss', patience=3, restore_best_weights=True)
 
     tuner.search(
-        get_training_dataset(),
+        get_training_dataset(1000),
         epochs=10,
-        validation_data=get_validation_dataset(),
+        validation_data=get_validation_dataset(1000),
         validation_steps=VALIDATION_STEPS,
         callbacks=[early_stopping]
     )
@@ -35,3 +35,8 @@ def tune_model():
     tuner.results_summary()
 
     return best_model
+
+
+model = tune_model()
+print(model.summary())
+

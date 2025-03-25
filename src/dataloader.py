@@ -37,8 +37,13 @@ def data_augment(image, label):
     #image = tf.image.random_saturation(image, 0, 2)
     return image, label   
 
-def get_training_dataset():
+def get_training_dataset(sample_size=None):
     dataset = load_dataset(config.TRAINING_FILENAMES)
+    dataset = dataset.shuffle(10000)  # Shuffle more to ensure good randomness before sampling
+
+    if sample_size is not None:
+        dataset = dataset.take(sample_size)
+
     dataset = dataset.map(data_augment, num_parallel_calls=AUTO)
     dataset = dataset.repeat()
     dataset = dataset.shuffle(2048)
@@ -46,8 +51,12 @@ def get_training_dataset():
     dataset = dataset.prefetch(AUTO)
     return dataset
 
-def get_validation_dataset(ordered=False):
+def get_validation_dataset(ordered=False, sample_size=None):
     dataset = load_dataset(config.VALIDATION_FILENAMES, ordered=ordered)
+
+    if sample_size is not None:
+        dataset = dataset.shuffle(10000).take(sample_size)
+
     dataset = dataset.batch(config.BATCH_SIZE)
     dataset = dataset.cache()
     dataset = dataset.prefetch(AUTO)

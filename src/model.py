@@ -5,6 +5,7 @@ from tensorflow.keras.layers import Dense, Conv2D, Flatten, Concatenate, MaxPool
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
 from tensorflow.keras.optimizers import Adam
 import config
+# from tune import tune_model
     
 def residual_block(x, filters, blocks, stride=1):
     shortcut = x
@@ -18,12 +19,9 @@ def residual_block(x, filters, blocks, stride=1):
     x = tf.keras.layers.add([x, shortcut])
     return x
 
-def build_resnet_tune(hp):
-    # Define hyperparameters
-    dropout_rate = hp.Float('dropout_rate', min_value=0.0, max_value=0.6, step=0.1)
-    learning_rate = hp.Float('learning_rate', min_value=1e-5, max_value=1e-2, sampling='log')
-    optimizer_choice = hp.Choice('optimizer', values=['adam', 'sgd'])
-    
+
+# ResNet 18
+def build_resnet():
     input_layer = Input(shape=(*config.IMAGE_SIZE, 3))
     x = Conv2D(64, (7, 7), strides=(2, 2), padding='same')(input_layer)
     x = BatchNormalization()(x)
@@ -32,35 +30,32 @@ def build_resnet_tune(hp):
 
     # Residual blocks
     x = residual_block(x, 64, 2)
-    x = Dropout(dropout_rate)(x)
+    x = Dropout(0.5)(x)
     x = residual_block(x, 128, 2, stride=2)
-    x = Dropout(dropout_rate)(x)
+    x = Dropout(0.5)(x)
     x = residual_block(x, 256, 2, stride=2)
-    x = Dropout(dropout_rate)(x)
+    x = Dropout(0.5)(x)
     x = residual_block(x, 512, 2, stride=2)
     
     x = GlobalAveragePooling2D()(x)
-    output_layer = Dense(len(config.CLASSES), activation='softmax', name='flower_prob')(x)
+    output_layer = tf.keras.layers.Dense(len(config.CLASSES), activation='softmax', name='flower_prob')(x)
 
     model = Model(inputs=input_layer, outputs=output_layer)
 
-    # Select optimizer based on search space
-    if optimizer_choice == 'adam':
-        optimizer = Adam(learning_rate=learning_rate)
-    else:
-        optimizer = tf.keras.optimizers.SGD(learning_rate=learning_rate)
-
     model.compile(
-        optimizer=optimizer,
+        optimizer='adam',
         loss='sparse_categorical_crossentropy',
         metrics=['sparse_categorical_accuracy'],
         steps_per_execution=8
     )
-
     return model
 
-# # ResNet 18
-# def build_resnet():
+# def build_resnet_tune(hp):
+#     # Define hyperparameters
+#     dropout_rate = hp.Float('dropout_rate', min_value=0.0, max_value=0.6, step=0.1)
+#     learning_rate = hp.Float('learning_rate', min_value=1e-5, max_value=1e-2, sampling='log')
+#     optimizer_choice = hp.Choice('optimizer', values=['adam', 'sgd'])
+    
 #     input_layer = Input(shape=(*config.IMAGE_SIZE, 3))
 #     x = Conv2D(64, (7, 7), strides=(2, 2), padding='same')(input_layer)
 #     x = BatchNormalization()(x)
@@ -69,22 +64,29 @@ def build_resnet_tune(hp):
 
 #     # Residual blocks
 #     x = residual_block(x, 64, 2)
-#     x = Dropout(0.5)(x)
+#     x = Dropout(dropout_rate)(x)
 #     x = residual_block(x, 128, 2, stride=2)
-#     x = Dropout(0.5)(x)
+#     x = Dropout(dropout_rate)(x)
 #     x = residual_block(x, 256, 2, stride=2)
-#     x = Dropout(0.5)(x)
+#     x = Dropout(dropout_rate)(x)
 #     x = residual_block(x, 512, 2, stride=2)
     
 #     x = GlobalAveragePooling2D()(x)
-#     output_layer = tf.keras.layers.Dense(len(config.CLASSES), activation='softmax', name='flower_prob')(x)
+#     output_layer = Dense(len(config.CLASSES), activation='softmax', name='flower_prob')(x)
 
 #     model = Model(inputs=input_layer, outputs=output_layer)
 
+#     # Select optimizer based on search space
+#     if optimizer_choice == 'adam':
+#         optimizer = Adam(learning_rate=learning_rate)
+#     else:
+#         optimizer = tf.keras.optimizers.SGD(learning_rate=learning_rate)
+
 #     model.compile(
-#         optimizer='adam',
+#         optimizer=optimizer,
 #         loss='sparse_categorical_crossentropy',
 #         metrics=['sparse_categorical_accuracy'],
 #         steps_per_execution=8
 #     )
+
 #     return model

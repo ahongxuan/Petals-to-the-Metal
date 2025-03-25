@@ -3,7 +3,7 @@ import datetime
 import tensorflow as tf
 
 SAVE_FILE = "submission_" + datetime.datetime.now().strftime("%Y%m%d_%H%M%S") + ".csv"
-SAVE_FOLDER = "/localscratch/liuyime2/CSE802/RESULTS"
+SAVE_FOLDER = "C:/Github/Petals-to-the-Metal/results"
 
 SUBMISSION_FILE = os.path.join(SAVE_FOLDER, SAVE_FILE)
 
@@ -14,7 +14,7 @@ if not os.path.exists(SAVE_FOLDER):
 
 IMAGE_SIZE = [224, 224] # available image sizes in flowers104 dataset: 512x512, 331x331, 224x224, 192,192
 BATCH_SIZE = 16
-EPOCHS = 40
+EPOCHS = 20
 
 # Learning rate schedule
 LR_START = 0.00001
@@ -24,7 +24,7 @@ LR_RAMPUP_EPOCHS = 0
 LR_SUSTAIN_EPOCHS = 0
 LR_EXP_DECAY = .93
 
-GCS_DS_PATH = "/localscratch/liuyime2/CSE802"
+GCS_DS_PATH = "C:/Github/Petals-to-the-Metal/tpu-getting-started"
 GCS_PATH_SELECT = { # available image sizes
     192: GCS_DS_PATH + '/tfrecords-jpeg-192x192',
     224: GCS_DS_PATH + '/tfrecords-jpeg-224x224',
