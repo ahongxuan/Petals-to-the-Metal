@@ -50,6 +50,33 @@ def build_resnet():
     )
     return model
 
+
+# Pretrained ResNet50 for Comparison
+def build_resnet50():
+    pretrained_model = tf.keras.applications.ResNet50(weights=None, include_top=False)
+
+    input_layer = Input(shape=(*config.IMAGE_SIZE, 3))
+
+    pretrained_model
+
+    x = GlobalAveragePooling2D()(x)
+    output_layer = tf.keras.layers.Dense(len(config.CLASSES), activation='softmax', name='flower_prob')(x)
+
+    model = Model(inputs=input_layer, outputs=output_layer)
+
+    model.compile(
+        optimizer='adam',
+        loss='sparse_categorical_crossentropy',
+        metrics=['sparse_categorical_accuracy'],
+        steps_per_execution=8
+    )
+    return model
+
+
+
+
+
+
 # def build_resnet_tune(hp):
 #     # Define hyperparameters
 #     dropout_rate = hp.Float('dropout_rate', min_value=0.0, max_value=0.6, step=0.1)

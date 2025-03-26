@@ -3,8 +3,8 @@ import tensorflow as tf
 import numpy as np
 from matplotlib import pyplot as plt
 from sklearn.metrics import f1_score, precision_score, recall_score, confusion_matrix
-from model import build_resnet
-# from model import build_resnet50
+# from model import build_resnet
+from model import build_resnet50
 from dataloader import get_training_dataset, get_validation_dataset, count_data_items
 import config
 
@@ -42,8 +42,8 @@ NUM_VAL_IMAGES = count_data_items(config.VALIDATION_FILENAMES)
 
 
 # Create the model
-model = build_resnet()
-# model = build_resnet50()
+# model = build_resnet()
+model = build_resnet50()
 
 # tensorboard --logdir=
 tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=config.LOG_DIR, histogram_freq=1)
